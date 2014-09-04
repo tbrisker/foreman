@@ -7,6 +7,7 @@ module HostCommon
 
   included do
     include CounterCacheFix
+    include UpdatePuppetclassesCounters
 
     counter_cache = "#{model_name.split(":").first.pluralize.downcase}_count".to_sym  # e.g. :hosts_count
 
@@ -203,6 +204,11 @@ module HostCommon
   def update_config_group_counters(record)
     record.update_attribute(:hostgroups_count, cnt_hostgroups(record))
     record.update_attribute(:hosts_count, cnt_hosts(record))
+
+    # update puppetclass count
+    record.puppetclasses.each do |puppetclass|
+      puppetclass.update_hosts_count
+    end
   end
 
 end

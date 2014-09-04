@@ -76,4 +76,36 @@ class PuppetclassTest < ActiveSupport::TestCase
     assert_equal "Puppetclass", "puppetclass".classify
     assert_equal "Puppetclass", "puppetclasses".classify
   end
+
+  test "should update hosts_count on direct host assignment" do
+    pc1 = FactoryGirl.create(:puppetclass)
+    host = FactoryGirl.create(:host, :with_puppetclass)
+    pc2 = host.puppetclasses.first
+    host.puppetclasses << pc1
+    assert_equal 1, pc1.hosts_count
+    assert_equal 1, pc2.hosts_count
+    host.puppetclasses.delete([pc1,pc2])
+    assert_equal 0, pc1.hosts_count
+    assert_equal 0, pc2.hosts_count
+  end
+
+  test "should update hosts_count via hostgroup" do
+    hg = FactoryGirl.create(:hostgroup, :with_puppetclass)
+    host = FactoryGirl.create(:host, :hostgroup => hg, :environment => hg.environment)
+    assert_equal 1, hg.puppetclasses.first.hosts_count
+    hg.hosts.delete(host)
+    assert_equal 0, hg.puppetclasses.first.hosts_count
+  end
+
+  test "should update hosts_count via config group" do
+    pc = FactoryGirl.create(:puppetclass)
+    hg = FactoryGirl.create(:hostgroup, :with_config_group)
+    cg = hg.config_groups.first
+    cg.puppetclasses << pc
+    host = FactoryGirl.create(:host, :hostgroup => hg, :environment => hg.environment)
+    assert_equal 1, pc.hosts_count
+    hg.config_groups.delete(cg)
+    assert_equal 0, pc.hosts_count
+  end
+
 end
