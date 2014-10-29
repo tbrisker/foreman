@@ -2,17 +2,18 @@ class ConfigGroup < ActiveRecord::Base
   audited :allow_mass_assignment => true
   include Authorizable
   include Parameterizable::ByIdName
-  include UpdatePuppetclassesCounters
+  include PuppetclassesCounters
 
   validates_lengths_from_database
 
   attr_accessible :name, :puppetclass_ids
 
   has_many :config_group_classes
-  has_many :puppetclasses, :through => :config_group_classes, :after_add    => :update_puppetclass_hosts_count,
-                                                              :after_remove => :update_puppetclass_hosts_count
+  include UpdatePuppetclassesCounters
   has_many :host_config_groups
-  has_many_hosts :through => :host_config_groups
+j has_many_hosts :through      => :host_config_groups,
+                 :after_add    => update_all_puppetclasses_hosts_count,
+                 :after_remove => update_all_puppetclasses_hosts_count
 
   validates :name, :presence => true, :uniqueness => true
 
@@ -35,5 +36,4 @@ class ConfigGroup < ActiveRecord::Base
   def to_label
     name
   end
-
 end

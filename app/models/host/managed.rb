@@ -5,8 +5,6 @@ class Host::Managed < Host::Base
   PROVISION_METHODS = %w[build image]
 
   has_many :host_classes, :dependent => :destroy, :foreign_key => :host_id
-  has_many :puppetclasses, :through => :host_classes, :after_add => :update_puppetclass_hosts_count,
-                                                      :after_remove => :update_puppetclass_hosts_count
   belongs_to :hostgroup
   has_many :reports, :dependent => :destroy, :foreign_key => :host_id
   has_many :host_parameters, :dependent => :destroy, :foreign_key => :reference_id, :inverse_of => :host
@@ -36,8 +34,6 @@ class Host::Managed < Host::Base
   # Custom hooks will be executed after_commit
   after_commit :build_hooks
   before_save :clear_data_on_build
-  after_save :update_hostgroups_puppetclasses, :if => :hostgroup_id_changed?
-  after_create :update_all_puppetclasses_hosts_count
 
   def build_hooks
     return unless respond_to?(:old) && old && (build? != old.build?)
@@ -921,10 +917,4 @@ class Host::Managed < Host::Base
   def update_lookup_value_fqdn_matchers
     LookupValue.where(:match => "fqdn=#{fqdn_was}").update_all(:match => lookup_value_match)
   end
-
-  def update_hostgroups_puppetclasses
-    Hostgroup.find(hostgroup_id_was).update_all_puppetclasses_hosts_count if hostgroup_id_was.present?
-    Hostgroup.find(hostgroup_id).update_all_puppetclasses_hosts_count     if hostgroup_id.present?
-  end
-
 end
