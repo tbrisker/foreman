@@ -20,7 +20,7 @@ class HostsController < ApplicationController
   before_filter :ajax_request, :only => AJAX_REQUESTS
   before_filter :find_resource, :only => [:show, :clone, :edit, :update, :destroy, :puppetrun, :review_before_build,
                                          :setBuild, :cancelBuild, :power, :overview, :bmc, :vm,
-                                         :runtime, :resources, :templates, :nics, :ipmi_boot, :console,
+                                         :runtime, :resources, :templates, :nics, :ipmi_boot, :console, :journal,
                                          :toggle_manage, :pxe_config, :storeconfig_klasses, :disassociate]
 
   before_filter :taxonomy_scope, :only => [:new, :edit] + AJAX_REQUESTS
@@ -288,25 +288,38 @@ class HostsController < ApplicationController
     process_error :redirect => :back, :error_msg => _("Failed to configure %{host} to boot from %{device}: %{e}") % { :device => _(device_id), :host => @host.name, :e => e }
   end
 
+  def journal
+    if @host.cockpit_enabled?
+      @console = { :name => @host.name, :fqdn => @host.primary_interface.fqdn }
+      render 'hosts/journal'
+    end
+  end
+
   def console
-    return unless @host.compute_resource
-    @console = @host.compute_resource.console @host.uuid
-    @encrypt = case Setting[:websockets_encrypt]
-               when 'on'
-                 true
-               when 'off'
-                 false
+    if @host.compute_resource.present?
+      @console = @host.compute_resource.console @host.uuid
+      @encrypt = case Setting[:websockets_encrypt]
+                 when 'on'
+                   true
+                 when 'off'
+                   false
+                 else
+                   request.ssl? and not Setting[:websockets_ssl_key].blank? and not Setting[:websockets_ssl_cert].blank?
+                 end
+      render case @console[:type]
+               when 'spice'
+                 'hosts/console/spice'
+               when 'vnc'
+                 'hosts/console/vnc'
                else
-                 request.ssl? and not Setting[:websockets_ssl_key].blank? and not Setting[:websockets_ssl_cert].blank?
-               end
-    render case @console[:type]
-             when 'spice'
-               "hosts/console/spice"
-             when 'vnc'
-               "hosts/console/vnc"
-             else
-               "hosts/console/log"
-           end
+                 'hosts/console/log'
+             end
+    elsif @host.cockpit_enabled?
+      @console = { :name => @host.name, :fqdn => @host.primary_interface.fqdn }
+      render 'hosts/console/cockpit'
+    else
+      process_error :redirect => :back, :error_msg => _("Console not supported for this kind of host") and return
+    end
   rescue => e
     process_error :redirect => :back, :error_msg => _("Failed to set console: %s") % (e)
   end
@@ -577,7 +590,7 @@ class HostsController < ApplicationController
         :power
       when 'ipmi_boot'
         :ipmi_boot
-      when 'console'
+      when 'console', 'journal'
         :console
       when 'toggle_manage', 'multiple_parameters', 'update_multiple_parameters',
           'select_multiple_hostgroup', 'update_multiple_hostgroup', 'select_multiple_environment',
