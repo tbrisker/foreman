@@ -22,3 +22,7 @@ jQuery.humanize = function(str) {
             return match.charAt(0).toUpperCase() + match.slice(1);
         });
 };
+
+jQuery.escapeHTML = function(str) {
+  return $("<div></div>").text(str).html()
+}

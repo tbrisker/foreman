@@ -265,7 +265,7 @@ function fill_in_matchers(){
     var order = matcher.closest('.matcher-parent').find('#order').val().split('\n');
     matcher_key.empty();
     $.each(order, function (index, value) {
-      matcher_key.append($("<option>", {value: encodeURI(value), html: encodeURI(value)}));
+      matcher_key.append($("<option>", {value: $.escapeHTML(value), html: $.escapeHTML(value)}));
     });
     if (match) {
       var key_value = match_to_key_value(match);
