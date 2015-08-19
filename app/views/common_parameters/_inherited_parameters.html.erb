@@ -1,27 +1,20 @@
 <table class="table table-condensed" id="inherited_parameters">
-  <thead>
-    <tr>
-      <th class='col-md-3'><%= _("Scope") %></th>
-      <th class='col-md-2'><%= _("Name") %></th>
-      <th class='col-md-6'><%= _("Value") %></th>
-      <th><%= _('Actions') %></th>
-    </tr>
-  </thead>
-  <% if inherited_parameters.present? %>
-    <tbody>
-      <% keys = inherited_parameters.keys.sort %>
-      <% keys.each do |name| %>
-        <tr class="<%="override-param" if @host.host_parameters.map(&:name).include?(name)%>">
-          <%= "<td rowspan='#{keys.size}'>#{_('Global')}</td>".html_safe if name == keys.first %>
-          <td><%= content_tag :span, name, :id => "name_#{name}"%>
-          </td>
-          <td><%= parameter_value_field inherited_parameters[name] %></td>
-          <td>
-            <%= link_to_function(_("override"), "override_param(this)", :title => _("Override this value"),
-                                 :'data-tag' => 'override', :class => "btn btn-default") if authorized_via_my_scope("host_editing", "create_params") && !@host.host_parameters.map(&:name).include?(name) %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  <% end %>
+  <%= global_parameter_header %>
+  <tbody>
+    <% inherited_parameters.each do |name, value| %>
+      <tr class="<%="override-param" if @host.host_parameters.map(&:name).include?(name)%>">
+        <td>
+          <%= content_tag :span, trunc_with_tooltip(name,26), :id => "name_#{name}"%>
+        <span class="help-inline fr">
+          <%= popover("", _("<b>Source:</b> %{type} %{name}") % {:type => _(value[:source].to_s), :name => value[:source_name] ? "(#{value[:source_name]})":""}) %>
+        </span>
+        </td>
+        <td><%= parameter_value_field(name, value[:safe_value]) %></td>
+        <td>
+          <%= link_to_function(_("override"), "override_param('#{name}')", :title => _("Override this value"),
+                               :'data-tag' => 'override', :class => "btn btn-default") if authorized_via_my_scope("host_editing", "create_params") && !@host.host_parameters.map(&:name).include?(name) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
 </table>

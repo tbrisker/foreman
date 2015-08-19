@@ -466,16 +466,14 @@ function use_image_selected(element){
   });
 }
 
-function override_param(item){
-  var param = $(item).closest('tr');
-  var n = param.find('[id^=name_]').text();
-  var param_value = param.find('[id^=value_]');
+function override_param(name){
+  var param_value = $('[id=value_'+name+']');
   var v = param_value.val();
 
-  $('#parameters').find('.btn-success').click();
-  var new_param = param.closest('.tab-pane').find('td.col-md-6 [id*=host_host_parameters]:visible').parent().parent().last();
-  new_param.find('[id$=_name]').val(n);
-  new_param.find('td.col-md-6 [id$=_value]').val(v == param_value.data('hidden-value') ? '' : v);
+  $('#parameters .param-add').click();
+  var new_param = $('#parameters .form-group').last();
+  new_param.find('[id$=_name]').val(name);
+  new_param.find('[id$=_value]').val(v == param_value.data('hidden-value') ? '' : v);
   mark_params_override();
 }
 

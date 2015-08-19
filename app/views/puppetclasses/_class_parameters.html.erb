@@ -25,7 +25,7 @@
         <tr id="lookup_value_for_<%=key.id%>" class="lookup_key_override_row <%="visible" if key.overridden?(obj) %>">
           <% value = key.overriding_value(obj) %>
           <td class='col-md-2'>
-            <%= content_tag :span, trunc_with_tooltip(key.key), :class => "col-md-2 lookup_key_name", :'data-property' => 'name' %></td>
+            <%= content_tag :span, trunc_with_tooltip(key.key, 18), :class => "col-md-2 lookup_key_name", :'data-property' => 'name' %></td>
           <td class='col-md-7'>
               <%= hidden_field_tag "#{resource_name}[lookup_values_attributes][#{key.id}][lookup_key_id]", key.id %>
               <%= hidden_field_tag("#{resource_name}[lookup_values_attributes][#{key.id}][id]", value.id) if value.present? %>
@@ -44,7 +44,7 @@
           </td>
           <td><%= check_box_tag "#{resource_name}[lookup_values_attributes][#{key.id}][use_puppet_default]", nil, value.try(:use_puppet_default) %></td>
           <td>
-            <%= link_to(_("remove"), nil, :title => _("Remove this value"),
+            <%= link_to(_("remove"), nil, :title => _("Remove this override"),
                                  :'data-tag' => 'remove', :class => "btn btn-default remove_override_button" ) if authorized_via_my_scope("host_editing", "create_params") %>
           </td>
         </tr>

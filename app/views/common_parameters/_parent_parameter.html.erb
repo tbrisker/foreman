@@ -1,18 +1,19 @@
 <div class="fields">
+  <table class="table table-condensed">
+  <%= global_parameter_header %>
   <% @hostgroup.ancestors.map(&:group_parameters).flatten.each_with_index do |parameter, i|  %>
     <% next if @hostgroup.group_parameters.map(&:name).include? parameter.name %>
-    <table class="row">
-      <tr>
-        <td class="col-md-2">
-          <%= content_tag(:input, '', :class => "form-control", :disabled => true,  :value => _('Global'), :type=> :text ) %>
-        </td>
-        <td class="col-md-2">
-          <%= text_field_tag("parent_parameter_#{i}_key", '', :class => "form-control", :placeholder => parameter.name) %>
-        </td>
-        <td class="col-md-7">
-          <%= text_area_tag("parent_parameter_#{i}_value", '', :class => "form-control", :rows => 1, :placeholder => parameter.value) %>
-        </td>
-      </tr>
-    </table>
+    <tr>
+      <td><%= content_tag :span, trunc_with_tooltip(parameter.name,26), :id => "parent_parameter_#{i}_name"%></td>
+      <td>
+        <div class="input-group">
+          <%= text_area_tag("parent_parameter_#{i}_value", parameter.value, :class => "form-control", :rows => 1, :disabled => true ) %>
+          <span class="input-group-btn">
+            <%= fullscreen_button('$(this).parent().prev()') %>
+          </span>
+        </div>
+      </td>
+    </tr>
   <% end %>
+  </table>
 </div>

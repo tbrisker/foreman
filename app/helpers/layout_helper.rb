@@ -414,7 +414,7 @@ module LayoutHelper
   end
 
   def fullscreen_button(element = "$(this).prev()")
-    button_tag(:type => 'button', :class => 'btn btn-default btn-sm btn-fullscreen', :onclick => "set_fullscreen(#{element})", :title => _("Full screen")) do
+    button_tag(:type => 'button', :class => 'btn btn-default btn-fullscreen', :onclick => "set_fullscreen(#{element})", :title => _("Full screen")) do
       icon_text('resize-full')
     end
   end

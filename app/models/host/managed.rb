@@ -416,7 +416,7 @@ class Host::Managed < Host::Base
     operatingsystem.os_parameters.each {|p| hp.update Hash[p.name => include_source ? {:value => p.value, :source => N_('os').to_sym, :safe_value => p.safe_value, :source_name => operatingsystem.to_label} : p.value] } unless operatingsystem.nil?
     # read group parameters only if a host belongs to a group
     hp.update hostgroup.parameters(include_source) if hostgroup
-    hp
+    hp.sort_by{|k,v| k.to_s}
   end
 
   def host_params

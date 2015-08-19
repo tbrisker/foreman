@@ -9,13 +9,21 @@ module CommonParametersHelper
     _("Parameters that would be associated with hosts in this %s") % (type)
   end
 
-  def parameter_value_field(value)
-    source_name = value[:source_name] ? "(#{value[:source_name]})" : nil
-    content_tag :div, :class => "form-group condensed" do
-      text_area_tag("value_#{value[:safe_value]}", value[:safe_value], :rows => (value[:safe_value].to_s.lines.count || 1 rescue 1),
-                    :class => "col-md-6", :disabled => true, :'data-hidden-value' => Parameter.hidden_value) +
-        fullscreen_button +
-        content_tag(:span, :class => "help-inline") { popover("", _("<b>Source:</b> %{type} %{name}") % {:type => _(value[:source].to_s), :name => source_name})}
+  def global_parameter_header
+    content_tag(:thead) do
+      content_tag(:tr) do
+        content_tag(:th, _("Name"), :class => 'col-md-3')+
+          content_tag(:th, _("Value"), :class => 'col-md-7')+
+          content_tag(:th, _("Actions"), :class => 'col-md-2')
+      end
+    end
+  end
+
+  def parameter_value_field(name, value)
+    content_tag :div, :class => "input-group" do
+      text_area_tag("value_#{name}", value, :rows => 1,
+                    :class => "form-control", :disabled => true, :'data-hidden-value' => Parameter.hidden_value) +
+        content_tag(:span, fullscreen_button('$(this).parent().prev()'), :class => 'input-group-btn')
     end
   end
 

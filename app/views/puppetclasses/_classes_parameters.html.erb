@@ -6,36 +6,36 @@
     <li class="<%="active" if @interesting_klasses.blank?%>">
       <a data-toggle="tab"  href="#global_parameters"><%=_("Global")%></a>
     </li>
-    <li class="seperator">
-      <h4><%=_("Puppet")%></h4>
-    </li>
-    <% @interesting_klasses.each do |klass| %>
-        <li class="<%= "active" if @interesting_klasses.first == klass%>">
-          <a data-toggle="tab" id="pill_<%= klass[:klass].to_s.gsub(':', '_') + '_' + klass[:klass].id.to_s %>"
-             href="#<%= klass[:klass].to_s.gsub(':', '_') + '_' + klass[:klass].id.to_s %>"><%= klass[:klass].name %></a>
-        </li>
+    <% if @interesting_klasses.present? %>
+      <li class="seperator">
+        <h4><%=_("Puppet")%></h4>
+      </li>
+      <% @interesting_klasses.each do |klass| %>
+          <li class="<%= "active" if @interesting_klasses.first == klass%>">
+            <a data-toggle="tab" id="pill_<%= klass[:klass].to_s.gsub(':', '_') + '_' + klass[:klass].id.to_s %>"
+               href="#<%= klass[:klass].to_s.gsub(':', '_') + '_' + klass[:klass].id.to_s %>"><%= klass[:klass].name %></a>
+          </li>
+      <% end %>
     <% end %>
   </ul>
 </div>
 
-<div class="tab-content col-md-9 stacked-content">
+<div class="tab-content col-md-10 stacked-content">
   <div class="tab-pane <%="active" if @interesting_klasses.blank?%>" id="global_parameters">
     <% if obj.is_a?(Hostgroup) %>
-      <h4><%= _('Host group parameters') %></h4>
-      <p/>
       <% if obj.parent.present? %>
+        <h4><%= _('Included parameters via inheritance') %></h4>
           <%= render "common_parameters/parent_parameter", :f => f %>
       <% end %>
-      <p/>
+      <h4><%= _('Host group parameters') %></h4>
       <%= render "common_parameters/parameters", { :f => f, :type => :group_parameters } %>
     <% else %>
-      <h4><%= _('Included Parameters via inheritance') %></h4>
-      <%= render "common_parameters/inherited_parameters", { :inherited_parameters => inherited_parameters } %>
-      <p></p>
-
-      <h4><%= _('Host Parameters') %></h4>
-
-      <p></p>
+      <% if inherited_parameters.present? %>
+        <h4><%= _('Included parameters via inheritance') %></h4>
+        <%= render "common_parameters/inherited_parameters", { :inherited_parameters => inherited_parameters } %>
+        <p></p>
+      <% end %>
+      <h4><%= _('Host parameters') %></h4>
       <%= render "common_parameters/parameters", { :f => f, :type => :host_parameters } %>
     <% end %>
   </div>
@@ -44,9 +44,6 @@
     <% @interesting_klasses.each do |klass| %>
         <%= render :partial => "puppetclasses/class_parameters", :locals => { :obj => obj, :puppetclass => klass[:klass], :lookup_keys => klass[:keys], :active =>  @interesting_klasses.first == klass } %>
     <% end %>
-  <% else %>
-    <p><%= _("You don't seem to have any Puppet classes with parameters.") %></p>
-    <p><%= _("Go to the puppet classes tab to select some and come back.") %></p>
   <% end %>
 </div>
 

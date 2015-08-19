@@ -1,32 +1,27 @@
 <% disabled = (not authorized_via_my_scope("host_editing", "edit_params")) %>
 <div class="fields">
-  <table class="row">
+  <table class="table-condensed">
     <tbody>
       <tr class="form-group <%= 'has-error' if f.object.errors.any? %>">
-        <% if controller_name =~ /(host|hostgroup)/ %>
-          <td class="col-md-3">
-            <%= content_tag(:input, '', :class => "form-control", :disabled => true,  :value => _('Global'), :type=> :text ) %>
-          </td>
-        <% end %>
-        <td class="col-md-2">
+        <td class="col-md-3">
           <%= f.text_field(:name,  :class => "form-control", :disabled => disabled, :placeholder => _("Name")) %>
         </td>
-        <td class="col-md-4 value">
-          <% if f.object.hidden_value? %>
-            <%= f.password_field(:value, :class => 'form-control',
-                             :disabled => disabled,
-                             :value => f.object.value) %>
-          <% else %>
-            <%= f.text_area(:value,
-                        :class => "form-control",
-                        :rows => line_count(f, :value),
-                        :disabled => disabled,
-                        :placeholder => _("Value")) %>
-
-          <% end %>
-        </td>
-        <td class="col-md-1">
-          <%= fullscreen_button("$(this).parent().prev().find('textarea')") unless f.object.hidden_value? %>
+        <td class="col-md-7 value">
+          <div class="input-group col-md-12">
+            <% if f.object.hidden_value? %>
+              <%= f.password_field(:value, :class => 'form-control',
+                                   :disabled => disabled,
+                                   :value => f.object.value) %>
+            <% else %>
+              <%= f.text_area(:value, :class => "form-control",
+                              :rows => 1,
+                              :disabled => disabled,
+                              :placeholder => _("Value")) %>
+            <% end %>
+            <span class="input-group-btn">
+              <%= fullscreen_button('$(this).parent().prev()') %>
+            </span>
+          </div>
         </td>
         <td>
           <%= f.check_box(:hidden_value,
