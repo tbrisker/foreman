@@ -2,6 +2,7 @@ class Parameter < ActiveRecord::Base
   extend FriendlyId
   friendly_id :name
   include Parameterizable::ByIdName
+  include HiddenValue
 
   validates_lengths_from_database
 
@@ -22,18 +23,6 @@ class Parameter < ActiveRecord::Base
     find_in_batches do |params|
       params.each { |param| param.update_attribute(:priority, param.priority) }
     end
-  end
-
-  def safe_value
-    self.hidden_value? ? self.hidden_value : self.value
-  end
-
-  def hidden_value
-    self.class.hidden_value
-  end
-
-  def self.hidden_value
-    '*' * 5
   end
 
   private

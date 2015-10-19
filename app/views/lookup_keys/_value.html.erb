@@ -10,10 +10,7 @@
   </td>
   <td>
     <div class="input-group">
-      <%= f.text_area :value, :rows => 1, :class => 'form-control no-stretch', :'data-property' => 'value',
-                      :disabled => f.object.use_puppet_default,
-                      :placeholder => _("Value") %>
-      <%= fullscreen_input %>
+      <%= hidden_value_field(f, :value, f.object.value, f.object.use_puppet_default, :'data-property' => 'value') %>
     </div>
   </td>
   <td class="ca">

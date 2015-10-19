@@ -1,6 +1,7 @@
 class LookupKey < ActiveRecord::Base
   include Authorizable
   include CounterCacheFix
+  include HiddenValue
 
   KEY_TYPES = [N_("string"), N_("boolean"), N_("integer"), N_("real"), N_("array"), N_("hash"), N_("yaml"), N_("json")]
   VALIDATOR_TYPES = [N_("regexp"), N_("list") ]
@@ -19,6 +20,7 @@ class LookupKey < ActiveRecord::Base
                                 :reject_if => :reject_invalid_lookup_values,
                                 :allow_destroy => true
 
+  delegate :value, :to => :default_value
   before_validation :cast_default_value
 
   validates :key, :presence => true
@@ -42,6 +44,10 @@ class LookupKey < ActiveRecord::Base
       scoped_search :in => :lookup_values, :on => :value, :rename => :value, :complete_value => true
     end
     super
+  end
+
+  def self.hidden_value
+    HIDDEN_VALUE
   end
 
   default_scope -> { order('lookup_keys.key') }

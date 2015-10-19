@@ -465,7 +465,7 @@ module LayoutHelper
     end
   end
 
-  def fullscreen_input(element = "$(this).parent().prev()")
+  def fullscreen_input(element = "$(this).parents('.input-group').find('input,textarea')")
     content_tag(:span, fullscreen_button(element), :class => 'input-group-btn')
   end
 

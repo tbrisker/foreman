@@ -4,6 +4,7 @@ class LookupValue < ActiveRecord::Base
 
   validates_lengths_from_database
   audited :associated_with => :lookup_key, :allow_mass_assignment => true
+  delegate :hidden_value?, :hidden_value, :to => :lookup_key, :allow_nil => true
 
   belongs_to :lookup_key, :counter_cache => true
   validates :match, :presence => true, :uniqueness => {:scope => :lookup_key_id}, :format => LookupKey::VALUE_REGEX

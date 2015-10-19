@@ -15,6 +15,7 @@
         <%= lookup_key_with_diagnostic(obj, lookup_key, lookup_value) %>
         <span class="input-group-btn">
           <%= fullscreen_button("$(this).parent().prev()") %>
+          <%= hidden_toggle if overridden && lookup_key.hidden_value? %>
           <%= override_toggle(overridden) %>
         </span>
       </div>

@@ -81,14 +81,16 @@ module LookupKeysHelper
     inherited_value = lookup_key.value_before_type_cast(value)
     overridden  = inherited_value.present? || lookup_value.value.present?
     warnings  = lookup_key_warnings(lookup_key.required, overridden)
+    value_to_display = lookup_value.value || inherited_value
 
     parameter_value_content(
       "#{parameters_receiver}_lookup_values_attributes_#{lookup_key.id}_value",
-      lookup_value.value || inherited_value,
+      value_to_display,
       :popover => diagnostic_popover(lookup_key, matcher, inherited_value, warnings),
       :name => "#{lookup_value_name_prefix(lookup_key.id)}[value]",
       :disabled => !lookup_key.overridden?(obj) || lookup_value.use_puppet_default,
-      :inherited_value => inherited_value)
+      :inherited_value => inherited_value,
+      :lookup_key => lookup_key)
   end
 
   def value_matcher(obj, lookup_key)
@@ -144,6 +146,16 @@ module LookupKeysHelper
                        :title => _("Remove this override"),
                       :'data-tag' => 'remove',
                       :class =>"btn btn-default btn-md #{'hide' unless overridden}")
+  end
+
+  def hidden_toggle
+    return unless can_edit_params?
+    link_to_function(icon_text('eye-open'), "switch_textarea_password($(this).closest('.input-group').find('textarea'), false)",
+                     :title => _("Unhide this value"),
+                     :class =>"btn btn-default btn-md") +
+        link_to_function(icon_text('eye-close'), "switch_textarea_password($(this).closest('.input-group').find('input'), true)",
+                         :title => _("Hide this value"),
+                         :class =>"btn btn-default btn-md")
   end
 
   def lookup_value(host_or_hostgroup, lookup_key)

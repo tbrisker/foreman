@@ -16,17 +16,36 @@ module CommonParametersHelper
   end
 
   def parameter_value_content(id, value, options)
-    content_tag(:span, options[:popover], :class => "input-group-addon") +
-      text_area_tag(id, value, { :rows => 1,
-                                 :class => 'form-control no-stretch',
-                                 :'data-property' => 'value',
-                                 :'data-hidden-value' => Parameter.hidden_value,
-                                 :'data-inherited-value' => options[:inherited_value],
-                                 :name => options[:name].to_s,
-                                 :disabled => options[:disabled] })
+    lookup_key = options[:lookup_key]
+    option_hash = { :rows => 1,
+                    :class => 'form-control no-stretch',
+                    :'data-property' => 'value',
+                    :'data-hidden-value' => LookupKey.hidden_value,
+                    :'data-inherited-value' => options[:inherited_value],
+                    :name => options[:name].to_s,
+                    :disabled => options[:disabled] }
+    if lookup_key.present? && lookup_key.hidden_value?
+      text_area = password_field_tag(id, value, option_hash)
+    else
+      text_area = text_area_tag(id, value, option_hash)
+    end
+
+    content_tag(:span, options[:popover], :class => "input-group-addon") + text_area
   end
 
   def use_puppet_default_help link_title = nil, title = _("Use Puppet default")
     popover(link_title, _("Do not send this parameter via the ENC.<br>Puppet will use the value defined in the manifest."), :title => title)
+  end
+
+  def hidden_value_field(f, field, value, disabled, options = {})
+    if f.object.hidden_value?
+      text_field = f.password_field(field, :disabled => disabled, :value => value, :class => 'form-control')
+    else
+      text_field = f.text_area(field, options.merge(:disabled => disabled,
+                                                    :class => "form-control no-stretch",
+                                                    :rows => 1,
+                                                    :placeholder => _("Value")))
+    end
+    text_field + fullscreen_input
   end
 end

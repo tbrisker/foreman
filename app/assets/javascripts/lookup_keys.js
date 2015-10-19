@@ -278,3 +278,25 @@ function build_match() {
   });
 }
 
+function  turn_default_value_and_lookup_values_switch(checkbox) {
+  var id = checkbox.id.replace(/hidden_value$/, "default_value");
+  var default_value = document.getElementById(id);
+  var lookup_values = $(checkbox.closest('.fields')).find('.lookup_values').find('[id$="value"]');
+  switch_textarea_password(default_value, checkbox.checked);
+  lookup_values.each(function () {
+    switch_textarea_password(this, checkbox.checked);
+  })
+}
+
+function switch_textarea_password(source, checked) {
+  debugger
+  var target;
+
+  if (checked) {
+    target = $('<input/>').attr({ type: 'password', id: source.id, name: source.name, value: $(source).val(), class: 'form-control', disabled: source.disabled });
+  }
+  else {
+    target = $('<textarea/>').attr({ class: 'form-control', id: source.id, name: source.name, placeholder: 'Value', rows: 1, value: $(source).val(), disabled: source.disabled });
+  }
+  $(source).replaceWith(target);
+}

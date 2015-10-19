@@ -5,18 +5,7 @@
   </td>
   <td>
     <div class="input-group col-md-12">
-      <% if f.object.hidden_value? %>
-        <%= f.password_field(:value, :class => 'form-control',
-                         :disabled => disabled,
-                         :value => f.object.value) %>
-      <% else %>
-        <%= f.text_area(:value,
-                    :class => "form-control no-stretch",
-                    :rows => 1,
-                    :disabled => disabled,
-                    :placeholder => _("Value")) %>
-      <% end %>
-      <%= fullscreen_input %>
+      <%= hidden_value_field(f, :value, f.object.value, disabled) %>
     </div>
   </td>
   <td>
