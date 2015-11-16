@@ -68,53 +68,123 @@ module LookupKeysHelper
                "</dl>"), :title => _("Validation types")).html_safe}
   end
 
-  def overridable_lookup_keys(klass, host)
-    klass.class_params.override.where(:environment_classes => {:environment_id => host.environment}) + klass.lookup_keys
+  def overridable_lookup_keys(klass, host_or_hostgroup)
+    klass.class_params.override.where(:environment_classes => {:environment_id => host_or_hostgroup.environment}) + klass.lookup_keys
   end
 
-  def key_with_diagnostic(obj, key, index, lookup_value, value_hash = nil)
-    if obj.class.model_name == "Hostgroup"
-      value, matcher = obj.inherited_lookup_value key
-    else # host
-      value_for_key = value_hash[key.id] && value_hash[key.id][key.key]
-      value, matcher = value_for_key ? [value_for_key[:value], "#{value_for_key[:element]} (#{value_for_key[:element_name]})"] : [key.default_value, _("Default value")]
-    end
-
-    original_value = key.value_before_type_cast value
-    overriden_value = lookup_value.try(:value)
-    no_value = value.to_s.empty? && overriden_value.to_s.empty?
-
-    explanation = _("<b>Description:</b> %{desc}<br/>
-                     <b>Type:</b> %{type}<br/>
-                     <b>Matcher:</b> %{matcher}<br/>
-                     <b>Inherited value:</b> %{original_value}") %
-                    { :desc => key.description, :type => key.key_type, :matcher => matcher, :original_value => original_value }
-    if no_value && obj.class.model_name == "Host"
-      if key.required
-        explanation.prepend(_("Required parameter without value.<br/><b>Please override!</b><br/>"))
-        icon = "warning-sign"
-      else
-        explanation.prepend(_("Optional parameter without value.<br/><i>Won't be given to Puppet.</i><br/>"))
-        icon = "exclamation-sign"
-      end
-    end
-    diagnostic_helper = popover('', explanation, :data => { :placement => 'top' }, :title => _("Original value info"), :icon => icon)
-
-    value_for_form = overriden_value.nil? ? original_value : overriden_value
-    parameter_value_content("#{obj.class.model_name.downcase}_lookup_values_attributes_#{index}_value",
-                            value_for_form,
-                            { :popover => diagnostic_helper,
-                              :name => "#{obj.class.model_name.downcase}[lookup_values_attributes][#{index}][value]",
-                              :disabled => !key.overridden?(obj) || lookup_value.try(:use_puppet_default),
-                              :original_value => original_value
-                            })
+  def can_edit_params?
+    authorized_via_my_scope("host_editing", "edit_params")
   end
 
-  def override_buttons(can_edit, overridden)
-    return unless can_edit
-    link_to_function(icon_text('edit'), "override_class_param(this)", :title => _("Override this value"),
-                         :'data-tag' => 'override', :class =>"btn btn-default btn-md #{'hide' if overridden}") +
-      link_to_function(icon_text('remove'), "override_class_param(this)", :title => _("Remove this override"),
-                         :'data-tag' => 'remove', :class =>"btn btn-default btn-md #{'hide' unless overridden}")
+  def lookup_key_with_diagnostic(obj, lookup_key, lookup_value)
+    value, matcher = value_matcher(obj, lookup_key)
+    inherited_value = lookup_key.value_before_type_cast(value)
+    overridden  = inherited_value.present? || lookup_value.value.present?
+    explanation = lookup_key_explanation(lookup_key, matcher, inherited_value)
+    diagnostic  = lookup_key_diagnostic(lookup_key.required, overridden)
+
+
+    parameter_value_content(
+      "#{parameters_receiver}_lookup_values_attributes_#{lookup_key.id}_value",
+      lookup_value.value || inherited_value,
+      :popover => diagnostic_popover(explanation, diagnostic),
+      :name => "#{parameters_receiver}[lookup_values_attributes][#{lookup_key.id}][value]",
+      :disabled => !lookup_key.overridden?(obj) || lookup_value.use_puppet_default,
+      :inherited_value => inherited_value)
+  end
+
+  def value_matcher(obj, lookup_key)
+    send(:"#{parameters_receiver}_value_matcher", obj, lookup_key)
+  end
+
+  def diagnostic_popover(explanation, diagnostic)
+    popover('', explanation.prepend(diagnostic[:text]),
+            :data => { :placement => 'top' },
+            :title => _("Original value info"),
+            :icon => diagnostic[:icon])
+  end
+
+  def lookup_key_explanation(lookup_key, matcher, inherited_value)
+    _("<b>Description:</b> %{desc}<br/>
+     <b>Type:</b> %{type}<br/>
+     <b>Matcher:</b> %{matcher}<br/>
+     <b>Inherited value:</b> %{inherited_value}") %
+    { :desc => lookup_key.description, :type => lookup_key.key_type,
+      :matcher => matcher, :inherited_value => inherited_value }
+  end
+
+  def lookup_key_diagnostic(required, overridden)
+    return { :text => '', :icon => 'info-sign' } if overridden
+
+    if required
+      { :text => _("Required parameter without value.<br/><b>Please override!</b><br/>"),
+        :icon => "warning-sign" }
+    else
+      { :text => _("Optional parameter without value.<br/><i>Will not be sent to Puppet.</i><br/>"),
+        :icon => "exclamation-sign" }
+    end
+  end
+
+  def override_toggle(overridden)
+    link_to_function(icon_text('edit'), "override_class_param(this)",
+                     :title => _("Override this value"),
+                     :'data-tag' => 'override',
+                     :class =>"btn btn-default btn-md #{'hide' if overridden}") +
+      link_to_function(icon_text('remove'), "override_class_param(this)",
+                       :title => _("Remove this override"),
+                      :'data-tag' => 'remove',
+                      :class =>"btn btn-default btn-md #{'hide' unless overridden}")
+  end
+
+  def lookup_value(host_or_hostgroup, lookup_key)
+    lookup_key.overridden_value(host_or_hostgroup) || LookupValue.new
+  end
+
+  def class_parameters_table_title(puppetclass_name, rowspan)
+    content_tag(:td, puppetclass_name, :rowspan => rowspan, :class => "ellipsis")
+  end
+
+  def use_puppet_default_check_box(lookup_key, lookup_value, disabled)
+    return unless lookup_key.type == "PuppetclassLookupKey"
+    check_box(lookup_value_name_prefix(lookup_key.id), :use_puppet_default,
+              :value    => lookup_value.id,
+              :disabled => disabled,
+              :onchange => "toggleUsePuppetDefaultValue(this, 'value')",
+              :hidden   => disabled,
+              :title    => _('Use Puppet default'),
+              :checked  => lookup_value.use_puppet_default)
+  end
+
+  def remove_lookup_value_fields(lookup_key, lookup_value, disabled)
+    return unless can_edit_params?
+    value_prefix = lookup_value_name_prefix(lookup_key.id)
+    hidden_field(value_prefix, :lookup_key_id, :value => lookup_key.id,
+                 :disabled => disabled, :class => 'send_to_remove') +
+      hidden_field(value_prefix, :id, :value => lookup_value.id,
+                   :disabled => disabled, :class => 'send_to_remove') +
+        hidden_field(value_prefix, :_destroy, :value => false,
+                     :disabled => disabled, :class => 'send_to_remove destroy')
+  end
+
+  # Input tags used to override lookup keys need a 'name' HTML attribute to
+  # tell Rails which lookup_value they belong to.
+  # This method returns the name attribute for any combination of lookup_key
+  # and host/hostgroup. Other objects that may receive parameters too will need
+  # to override this method in their respective helpers.
+  def lookup_value_name_prefix(lookup_key_id)
+    "#{parameters_receiver}[lookup_values_attributes][#{lookup_key_id}]"
+  end
+
+  def parameters_receiver
+    return 'host' if params[:host].present? || params[:controller] == 'hosts'
+    'hostgroup'
+  end
+
+  def lookup_value_errors(lookup_value)
+    content_tag(:td, :class => "#{has-error if lookup_value.errors.present?}") do
+      yield
+      content_tag(:span, lookup_value.errors.messages[:value].to_sentence,
+                  :class => "help-block") if lookup_value.errors.present?
+    end
   end
 end

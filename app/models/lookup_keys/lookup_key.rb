@@ -144,6 +144,12 @@ class LookupKey < ActiveRecord::Base
     host.lookup_values.any? { |lv| lv.lookup_key_id == id }
   end
 
+  def overridden_value(host)
+    host.lookup_values.detect do |lookup_value|
+      lookup_value.lookup_key_id == self.id
+    end
+  end
+
   def puppet?
     false
   end

@@ -27,7 +27,19 @@ module HostsHelper
   def value_hash_cache(host)
     @value_hash_cache ||= {}
     @value_hash_cache[host.id] ||= begin
-      Classification::ClassParam.new(:host=>host).inherited_values.merge(Classification::GlobalParam.new(:host=>host).inherited_values)
+      Classification::ClassParam.new(:host=>host).inherited_values.
+        merge(Classification::GlobalParam.new(:host=>host).inherited_values)
+    end
+  end
+
+  def host_value_matcher(host, lookup_key)
+    value_hash = value_hash_cache(host)
+    value_for_key = value_hash[lookup_key.id] && value_hash[lookup_key.id][lookup_key.key]
+    if value_for_key.present?
+      [value_for_key[:value],
+       "#{value_for_key[:element]} (#{value_for_key[:element_name]})"]
+    else
+      [lookup_key.default_value, _("Default value")]
     end
   end
 

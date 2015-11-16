@@ -18,4 +18,8 @@ module HostgroupsHelper
       accessible_hostgroups - @hostgroup.descendants - [@hostgroup]
     end
   end
+
+  def hostgroup_value_matcher(hostgroup, lookup_key)
+    hostgroup.inherited_lookup_value(lookup_key)
+  end
 end
