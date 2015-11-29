@@ -34,7 +34,7 @@
                    :onchange => 'toggleUsePuppetDefaultValue(this, "default_value")',
                    :disabled => (is_param && !f.object.override)) if is_param %>
     <%= checkbox_f(f, :hidden_value, :label => _('Hidden value'),
-                   :class => 'hidden_value_textarea_switch', :onchange => 'turn_default_value_and_lookup_values_switch(this)',
+                   :class => 'hidden_value_textarea_switch', :onchange => 'toggle_lookupkey_hidden(this)',
                    :checked => f.object.hidden_value?,
                    :help_inline => popover("", _("Hide all values for this parameter.")),
                    :size => "col-md-1", :label_size => "col-md-3", :table_field => true,

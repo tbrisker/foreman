@@ -141,21 +141,21 @@ module LookupKeysHelper
     link_to_function(icon_text('edit'), "override_class_param(this)",
                      :title => _("Override this value"),
                      :'data-tag' => 'override',
-                     :class =>"btn btn-default btn-md #{'hide' if overridden}") +
+                     :class =>"btn btn-default btn-md btn-override #{'hide' if overridden}") +
       link_to_function(icon_text('remove'), "override_class_param(this)",
                        :title => _("Remove this override"),
                       :'data-tag' => 'remove',
-                      :class =>"btn btn-default btn-md #{'hide' unless overridden}")
+                      :class =>"btn btn-default btn-md btn-override #{'hide' unless overridden}")
   end
 
-  def hidden_toggle
+  def hidden_toggle(hidden)
     return unless can_edit_params?
-    link_to_function(icon_text('eye-open'), "switch_textarea_password($(this).closest('.input-group').find('textarea'), false)",
+    link_to_function(icon_text('eye-open'), "input_group_hidden(this)",
                      :title => _("Unhide this value"),
-                     :class =>"btn btn-default btn-md") +
-        link_to_function(icon_text('eye-close'), "switch_textarea_password($(this).closest('.input-group').find('input'), true)",
+                     :class =>"btn btn-default btn-md btn-hide #{'hide' unless hidden}") +
+        link_to_function(icon_text('eye-close'), "input_group_hidden(this)",
                          :title => _("Hide this value"),
-                         :class =>"btn btn-default btn-md")
+                         :class =>"btn btn-default btn-md btn-hide #{'hide' if hidden}")
   end
 
   def lookup_value(host_or_hostgroup, lookup_key)

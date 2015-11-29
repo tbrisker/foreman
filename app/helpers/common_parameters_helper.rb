@@ -46,6 +46,6 @@ module CommonParametersHelper
                                                     :rows => 1,
                                                     :placeholder => _("Value")))
     end
-    text_field + fullscreen_input
+    input_group(text_field, input_group_btn(fullscreen_button("$(this).closest('.input-group').find('input,textarea')"), hidden_toggle(f.object.hidden_value?)))
   end
 end
