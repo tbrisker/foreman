@@ -203,6 +203,20 @@ module FormHelper
     end
   end
 
+  def byte_size_f(f, attr, options = {})
+    base_id = ActionView::Helpers::Tags::TextField.new(f.object_name, attr, nil, options).send :add_default_name_and_id, {}
+    options[:class] = options[:class].to_s + ' byte_spinner'
+    options[:help_inline] ||= popover('', _("When specifying custom value, add 'MB' or 'GB' at the end. Field is not case sensitive and MB is default if unspecified."))
+    options[:help_block] ||= content_tag(:span, :class => 'maximum-limit hidden') do
+      content_tag(:i, '', :class => 'pficon-warning-triangle-o') +
+      content_tag(:span, ' ' + _('Specified value is higher than recommended maximum'), :class => 'error-message')
+    end
+
+    javascript_include_tag("jquery.ui.custom_spinners.js") +
+      text_f(f, attr, options) +
+      f.hidden_field(attr, :id => "#{base_id}_hidden")
+  end
+
   def form_to_submit_id(f)
     object = f.object.respond_to?(:to_model) ? f.object.to_model : f.object
     key = if object.present?
