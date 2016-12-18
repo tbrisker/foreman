@@ -278,7 +278,7 @@ module ApplicationHelper
     content_tag(:div, options.merge(:class=>'btn-group')) do
       #single button
       if args.length == 1
-        content_tag(:span, args[0], :class => 'btn btn-default').html_safe
+        args[0].sub('<a ', '<a class="btn btn-default" ').html_safe
       #multiple options
       else
         link_to((title + " " + content_tag(:span, '', :class => 'caret')).html_safe, '#',
@@ -295,15 +295,15 @@ module ApplicationHelper
     args = args.flatten.select(&:present?)
     return if args.blank?
 
+    primary = args.delete_at(0)
+    primary.sub!('<a ', '<a class="btn btn-sm btn-default" ') unless primary.include? 'btn'
+
     #single button
-    return content_tag(:span, args[0].html_safe, :class=>'btn btn-sm btn-default') if args.length == 1
+    return primary.html_safe if args.blank?
 
     #multiple buttons
-    primary = args.delete_at(0).html_safe
-    primary = content_tag(:span, primary, :class=>'btn btn-sm btn-default') if primary !~ /btn/
-
     content_tag(:div,:class => "btn-group") do
-      primary + link_to(content_tag(:span, '', :class=>'caret'),'#', :class=>"btn btn-default #{'btn-sm' if primary =~ /btn-sm/} dropdown-toggle", :'data-toggle'=>'dropdown') +
+      primary.html_safe + link_to(content_tag(:span, '', :class=>'caret'),'#', :class=>"btn btn-default #{'btn-sm' if primary =~ /btn-sm/} dropdown-toggle", :'data-toggle'=>'dropdown') +
       content_tag(:ul,:class=>"dropdown-menu pull-right") do
         args.map{|option| content_tag(:li,option)}.join(" ").html_safe
       end
