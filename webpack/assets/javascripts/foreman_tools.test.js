@@ -57,3 +57,21 @@ describe('deprecate', () => {
     expect(console.warn).toHaveBeenCalledWith('DEPRECATION WARNING: you are using deprecated oldtest, it will be removed in Foreman 1.42. Use tfm.tools.newtest instead.');
   });
 });
+
+/* eslint-disable max-statements */
+describe('initTypeAheadSelect', () => {
+  it('initializes select2 on given input field', () => {
+    const $ = require('jquery');
+
+    require('select2');
+
+    document.body.innerHTML =
+      '<input type="text" id="typeahead" data-url="testurl" data-scope="testscope">';
+
+    let field = $('#typeahead');
+
+    tools.initTypeAheadSelect(field);
+
+    expect(document.body.innerHTML).toContain('select2-container');
+  });
+});

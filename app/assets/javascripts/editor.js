@@ -201,7 +201,7 @@ function set_render_mode() {
 
 function get_rendered_template(){
   var session = Editor.getSession();
-  host_id = $("#preview_host_selector select").val();
+  host_id = $("#preview_host_id").select2("val");
   url = $('.editor_source').data('render-path');
   template = $('#new').val();
   params = { template: template };
