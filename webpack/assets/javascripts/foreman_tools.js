@@ -58,11 +58,11 @@ export function initTypeAheadSelect(input) {
       url: input.data('url'),
       dataType: 'json',
       quietMillis: 250,
-      data: (term, page) => ({
+      data: (term, page) => {console.log(term);return({
         q: term,
         scope: input.data('scope')
-      }),
-      results: (data) => ({results: data.map(({id, name}) => ({id, text: name}))}),
+      })},
+      results: (data) => {console.log(data); return({results: data.map(({id, name}) => ({id, text: name}))})},
       cache: true
     },
     initSelection: function (element, callback) {
@@ -72,7 +72,7 @@ export function initTypeAheadSelect(input) {
         },
         dataType: 'json'
       }).done((data) => {
-        if (Object.keys(data).length > 0) {
+        if (data.length > 0) {
           callback({id: data[0].id, text: data[0].name});
         }
       });

@@ -70,8 +70,19 @@ describe('initTypeAheadSelect', () => {
 
     let field = $('#typeahead');
 
+    $.ajax = jest.fn((url) => {
+      var ajaxMock = $.Deferred();
+      // if (url == 'testurl')
+        ajaxMock.resolve([{'id': 1, 'name': 'testoption'},{'id': 2, 'name': 'anotheroption'}]);
+      return ajaxMock.promise();
+    })
+
     tools.initTypeAheadSelect(field);
 
+    $('.select2-choice').trigger('mousedown');
+    $('.select2-choice').trigger('mouseup');
+    console.log(document.body.innerHTML);
     expect(document.body.innerHTML).toContain('select2-container');
+    expect($('.select2-chosen').text()).toEqual('testoption');
   });
 });
