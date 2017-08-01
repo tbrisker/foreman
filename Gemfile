@@ -9,7 +9,7 @@ case SETTINGS[:rails]
 when '4.2'
   gem 'rails', '4.2.9'
 when '5.0'
-  gem 'rails', '5.0.4'
+  gem 'rails', '5.0.5'
   gem 'record_tag_helper', '~> 1.0'
 else
   raise "Unsupported Ruby on Rails version configured in settings.yaml: #{SETTINGS[:rails]}"
